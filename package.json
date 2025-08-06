@@ -1,0 +1,16 @@
+{
+	"name": "ts-madness",
+	"version": "0.0.0",
+	"description": "personal blog",
+	"author": "aliibrahim123",
+	"type": "module",
+	"homepage": "https://aliibrahim123.github.io/ts-madness/",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/aliibrahim123/ts-madness.git"
+	},
+	"license": "MIT",
+	"devDependencies": {
+		"typescript": ""
+	}
+}
