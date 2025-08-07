@@ -1,0 +1,1 @@
+// not recommended for begginers and people that have fought with types
