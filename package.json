@@ -4,6 +4,10 @@
 	"description": "personal blog",
 	"author": "aliibrahim123",
 	"type": "module",
+	"scripts": {
+		"gen-js-source": "node scripts/genJSSource.js",
+		"gen-logic": "node scripts/js/gen/logic.js"
+	},
 	"homepage": "https://aliibrahim123.github.io/ts-madness/",
 	"repository": {
 		"type": "git",
@@ -12,5 +16,9 @@
 	"license": "MIT",
 	"devDependencies": {
 		"typescript": ""
+	},
+	"dependencies": {
+		"@types/node": "^24.2.0",
+		"esbuild": "^0.25.8"
 	}
 }
