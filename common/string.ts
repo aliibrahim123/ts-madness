@@ -1,8 +1,18 @@
-export type rmPrefix <T extends string, P extends string> = T extends `${P}${infer R}` ? R : T;
-export type rmSuffix <T extends string, P extends string> = T extends `${infer R}${P}` ? R : T;
+export type rmPrefix<str extends string, pat extends string> = str extends `${pat}${infer rest}` ? rest : str;
+export type rmSuffix<str extends string, pat extends string> = str extends `${infer rest}${pat}` ? rest : str;
 
-export type hasPrefix <T extends string, P extends string> = T extends `${P}${string}` ? true : false;
-export type hasSuffix <T extends string, P extends string> = T extends `${string}${P}` ? true : false;
+export type hasPrefix<str extends string, pat extends string> = str extends `${pat}${string}` ? true : false;
+export type hasSuffix<str extends string, pat extends string> = str extends `${string}${pat}` ? true : false;
 
-export type toChars <T extends string> = T extends `${infer F}${infer R}` ? [F, ...toChars<R>] : [];
-export type toCharsRev <T extends string> = T extends `${infer F}${infer R}` ? [...toCharsRev<R>, F] : [];
+export type toChars<str extends string> =
+	str extends `${infer char}${infer rest}` ? [char, ...toChars<rest>] : [];
+export type toCharsRev<str extends string> =
+	str extends `${infer char}${infer rest}` ? [...toCharsRev<rest>, char] : [];
+
+export type firstChar<str extends string> = str extends `${infer char}${string}` ? char : never;
+
+export type whileMatch<str extends string, pat extends string> = whileMatchCore<str, pat, ''>;
+type whileMatchCore<str extends string, pat extends string, res extends string> =
+	str extends `${infer match extends pat}${infer rest}` ?
+	whileMatchCore<rest, pat, `${res}${match}`>
+	: [res, str];
