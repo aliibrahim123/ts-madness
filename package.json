@@ -6,7 +6,7 @@
 	"type": "module",
 	"scripts": {
 		"gen-js-source": "node scripts/genJSSource.js",
-		"gen-logic": "node scripts/js/gen/logic.js"
+		"gen-table": "node scripts/js/gen/math.js"
 	},
 	"homepage": "https://aliibrahim123.github.io/ts-madness/",
 	"repository": {
