@@ -1,18 +1,25 @@
+// simple json parser
+// supports every features plus comments
+// except number exponents and \u escape sequences
+
 import type { whileMatch } from "../common/string.ts"
 import type { prettify } from "../common/utils.ts";
 
+/** pattern of json number */
 type nbPattern = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '.' | '-' | '+';
 type whitespace = ' ' | '\t' | '\n' | '\r';
 
 type skipWhitespace <src extends string> =
 	src extends `${whitespace}${infer rest}` ? skipWhitespace<rest> : src;
 
-// the main part
+/** parse a json value */
 type parseValue <src extends string> =
 	// keywords
 	src extends `true${infer rest}` ? [true, rest] :
 	src extends `false${infer rest}` ? [false, rest] :
 	src extends `null${infer rest}` ? [null, rest] :
+	// comments
+	src extends `//${string}\n${infer rest}` ? parseValue<rest> :
 	src extends `${infer char}${infer rest}` ?
 		// skip whitespace
 		char extends ' ' | '\t' | '\n' | '\r' ? parseValue<rest> :
@@ -31,7 +38,7 @@ type parseValue <src extends string> =
 		never :
 	never;
 
-// capture string, handling quote escape sequences
+/** capture string, handling quote escape sequences */
 type captureStr <src extends string, res extends string> = 
 	// there is quote escape sequence
 	src extends `${infer text}\\"${infer rest}` ?
@@ -44,6 +51,7 @@ type captureStr <src extends string, res extends string> =
 	src extends `${infer text}"${infer rest}` ?
 		[`${res}${text}`, rest] : never;
 
+/** subtitute escape sequences */
 type parseEscapeSeq <src extends string, res extends string> =
 	// capture next escape sequence
 	src extends `${infer text}\\${infer char}${infer rest}` ? 
@@ -90,6 +98,7 @@ type parseObject <src extends string, obj> =
 		char extends '}' ? [prettify<obj & Record<name, value>>, rest] :
 	never : never : never : never : never;
 
+/** parse json */
 export type parse <src extends string> = 
 	// parse root value
 	parseValue<src> extends [infer value, infer rest extends string] ? 

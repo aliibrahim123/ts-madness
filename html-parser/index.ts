@@ -3,21 +3,22 @@
 // we dont support whitespace other than space since typescript will compute superpositional types
 
 import type { hasSuffix, rmSuffix } from "../common/string.ts";
-import type { eq, prettify } from "../common/utils.ts";
+import type { prettify } from "../common/utils.ts";
 
 export type Node = Element | string;
 
+/** html element */
 export type Element = {
 	tag: string;
 	attrs: Record<string, string>;
 	children: Node[];
 };
 
-// empty el of tag and attrs
+/** empty el of tag and attrs */
 type EmptyEl <tag extends string, attrs extends Record<string, string>> = 
 	{ tag: tag, attrs: attrs, children: [] }
 
-// parse <tag attrs>
+/** parse <tag attrs> */
 type handleHead <src extends string> = 
 	src extends `<${infer tag}>${infer children}` ?
 		//has whitespace, has attribute
@@ -29,7 +30,7 @@ type handleHead <src extends string> =
 	never
 ;
 
-// the loop that handle attributes
+/** the loop that handle attributes */
 type handleAttrs <attrs extends Record<string, string>, src extends string> =
 	// reached end, return
 	src extends '' ? attrs : 
@@ -48,6 +49,7 @@ type handleAttrs <attrs extends Record<string, string>, src extends string> =
 		//valueless attribute at the end
 		attrs & Record<src, ''>;
 
+/** parse attributes that have a value */
 type handleValuedAttr <attrs extends Record<string, string>, src extends string> =
 	src extends `${infer attr}=${infer rest}` ?
 		// 'value'
@@ -63,8 +65,8 @@ type handleValuedAttr <attrs extends Record<string, string>, src extends string>
 		attrs & Record<attr, rest> :
 	attrs
 
-//handle a child element
-type handleChild <inp extends {
+/** append a child element */
+type appendChild <inp extends {
 	childResult: { el: Element, src: string },
 	parent: Element
 }> = 
@@ -73,7 +75,7 @@ type handleChild <inp extends {
 		el: { tag: inp['parent']['tag'], attrs: inp['parent']['attrs'], children: [...inp['parent']['children'], inp['childResult']['el']] }
 	}>;
 
-//handle tag (end or start) in children
+/** handle tag (end or start) in children */
 type handleTagInChildren <inp extends {
 	src: string,
 	el: Element
@@ -81,10 +83,10 @@ type handleTagInChildren <inp extends {
 	//end tag, return
 	inp['src'] extends `/${infer tag}>${infer rest}` ? 
 		{ el: inp['el'], src: rest } :
-		// child element
-		handleChild<{ parent: inp['el'], childResult: handleElement<`<${inp['src']}`> }>
+	// child element
+	appendChild<{ parent: inp['el'], childResult: handleElement<`<${inp['src']}`> }>
 
-// the loop that handle children
+/** the loop that handle children */
 type handleChildrenLoop <inp extends {
 	src: string,
 	el: Element
@@ -112,4 +114,5 @@ type handleChildren <inp extends {
 type handleElement <src extends string> = 
 	handleChildren<handleHead<src>>
 
+/** parse html string */
 export type parse <src extends string> = handleElement<src>['el'];

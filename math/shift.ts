@@ -1,16 +1,18 @@
 import type { satisfies } from "../common/utils.ts";
 import type { sub8 } from "./arith.ts";
 import type { sign } from "./comp.ts";
-import type { allOf, Byte, Dg, Nb, Quat, u68, u6_u4u2, zero } from "./format.ts";
+import type { allOf, Byte, Dg, n64, Quat, n68, u6_u4u2, zero } from "./format.ts";
 import type {shift as SL1Dg} from "./tables.ts";
 
+/** shift left nb at dg level, taking filler for carry in */
 type shiftL1 <nb extends Dg[], fl extends Dg, a extends Quat> = [
 	SL1Dg[a][nb[0 ]][fl    ], SL1Dg[a][nb[1 ]][nb[0 ]], SL1Dg[a][nb[2 ]][nb[1 ]], SL1Dg[a][nb[3 ]][nb[2 ]],
 	SL1Dg[a][nb[4 ]][nb[3] ], SL1Dg[a][nb[5 ]][nb[4 ]], SL1Dg[a][nb[6 ]][nb[5 ]], SL1Dg[a][nb[7 ]][nb[6 ]],
 	SL1Dg[a][nb[8 ]][nb[7] ], SL1Dg[a][nb[9 ]][nb[8 ]], SL1Dg[a][nb[10]][nb[9 ]], SL1Dg[a][nb[11]][nb[10]],
 	SL1Dg[a][nb[12]][nb[11]], SL1Dg[a][nb[13]][nb[12]], SL1Dg[a][nb[14]][nb[13]], SL1Dg[a][nb[15]][nb[14]]
 ];
-type shiftL4 <nb extends Nb, fl extends Nb, amount extends Dg> = 
+/** sheft left nb digits, taking filler for carry in, returning [l1_fl: Dg, nb] */
+type shiftL4 <nb extends n64, fl extends n64, amount extends Dg> = 
 	[nb, fl] extends [[
 		infer n1, infer n2,  infer n3,  infer n4,  infer n5,  infer n6,  infer n7,  infer n8,
 		infer n9, infer n10, infer n11, infer n12, infer n13, infer n14, infer n15, infer n16
@@ -36,21 +38,33 @@ type shiftL4 <nb extends Nb, fl extends Nb, amount extends Dg> =
 		amount extends 15 ? [f1, [f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, n1]] :
 	never : never;
 
-export type funnelShift <nb extends Nb, fill extends Nb, amount extends Byte> = 
+/** funnel shift left a nb, taking filler for carry in */
+export type funnelShift <nb extends n64, fill extends n64, amount extends Byte> = 
+	// split amount for each level
 	u6_u4u2<amount> extends [infer l1 extends Quat, infer l4 extends Dg] ?
-	shiftL4<nb, fill, l4> extends [infer fill extends Dg, infer nb extends Nb] ?
+	// shift digits
+	shiftL4<nb, fill, l4> extends [infer fill extends Dg, infer nb extends n64] ?
+	// shift withen digits
 	shiftL1<nb, fill, l1> : 
 never : never;
 
-export type shl <nb extends Nb, amount extends Byte> = funnelShift<nb, zero, amount>;
-export type shr <nb extends Nb, amount extends Byte> = 
+/** logically shift left a nb */
+export type shl <nb extends n64, amount extends Byte> = funnelShift<nb, zero, amount>;
+/** logically shift right a nb */
+export type shr <nb extends n64, amount extends Byte> = 
+	// shr(n) = fsl([zero<n64>, n], (64 - amount))
 	amount extends [0, 0] ? nb : funnelShift<zero, nb, sub8<[0, 4], amount>>;
-export type rol <nb extends Nb, amount extends Byte> = funnelShift<nb, nb, amount>;
-export type sar <nb extends Nb, amount extends Byte> = 
+// rotate left a nb
+export type rol <nb extends n64, amount extends Byte> = funnelShift<nb, nb, amount>;
+// arithmetically shift right a nb
+export type sar <nb extends n64, amount extends Byte> = 
 	amount extends [0, 0] ? nb :
+	// sar(n) = fsl([repeat(sign(n), 64), n], amount)
 	funnelShift<sign<nb> extends 1 ? allOf<15> : zero, nb, sub8<[0, 4], amount>>
 
-export type shift68 <nb extends Nb, amount extends Quat> = 
-	satisfies<[...shiftL1<nb, 0, amount>, SL1Dg[amount][0][nb[15]]], u68>;
-export type shift128 <a extends Nb, b extends Nb> = 
+/** shift left n68 by a quat */
+export type shift68 <nb extends n64, amount extends Quat> = 
+	satisfies<[...shiftL1<nb, 0, amount>, SL1Dg[amount][0][nb[15]]], n68>;
+/** shift left n128 by 1 */
+export type shift128 <a extends n64, b extends n64> = 
 	[shiftL1<a, 0, 1>, shiftL1<b, sign<a> extends 0 ? 0 : 9, 1>];

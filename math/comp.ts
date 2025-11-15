@@ -1,13 +1,16 @@
 import type { sub } from "./arith.ts";
-import type { bit, Nb, zero } from "./format.ts";
+import type { bit, n64, zero } from "./format.ts";
 
-export type isZero <nb extends Nb> = nb extends zero ? true : false;
-export type isNeg <nb extends Nb> = bit<nb, 15, 3> extends 1 ? true : false;
-export type sign <nb extends Nb> = bit<nb, 15, 3>;
+export type isZero <nb extends n64> = nb extends zero ? true : false;
+/** check if nb is negative */
+export type isNeg <nb extends n64> = bit<nb, 15, 3> extends 1 ? true : false;
+/** get sign bit of a nb, 0 if positive, 1 if negative */
+export type sign <nb extends n64> = bit<nb, 15, 3>;
 
-export type comp <a extends Nb, b extends Nb> = 
+/** compare a and b, return 0 if eq, 1 if a gt, -1 if a lt */
+export type comp <a extends n64, b extends n64> = 
 	// compute diff
-	sub<a, b> extends infer diff extends Nb ?
+	sub<a, b> extends infer diff extends n64 ?
 		// diff == 0 => a == b
 		diff extends zero ? 0 :
 		sign<a> extends sign<b> ? 
@@ -18,6 +21,14 @@ export type comp <a extends Nb, b extends Nb> =
           	sign<a> extends 0 ? 1 : -1 :
 	never;
 
-export type eq <a extends Nb, b extends Nb> = sub<a, b> extends 0 ? true : false;
-export type gt <a extends Nb, b extends Nb> = comp<a, b> extends 1 ? true : false;
-export type lt <a extends Nb, b extends Nb> = comp<a, b> extends -1 ? true : false;
+/** check if a and b are equal */
+export type eq <a extends n64, b extends n64> = sub<a, b> extends 0 ? true : false;
+/** check if a is greater than b */
+export type gt <a extends n64, b extends n64> = comp<a, b> extends 1 ? true : false;
+/** check if a is less than b */
+export type lt <a extends n64, b extends n64> = comp<a, b> extends -1 ? true : false;
+
+/** return the minimum of a and b */
+export type min <a extends n64, b extends n64> = gt<a, b> extends true ? b : a;
+/** return the maximum of a and b */
+export type max <a extends n64, b extends n64> = gt<a, b> extends true ? a : b;
