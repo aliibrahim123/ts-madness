@@ -1,4 +1,5 @@
 import type { add8 } from "./arith.ts";
+import type { sign } from "./comp.ts";
 import type { asN64, Byte, Dg, n64 } from "./format.ts";
 import type { and as andTable, or as orTable, xor as xorTable } from "./tables.ts";
 
@@ -23,14 +24,15 @@ export type or <a extends n64, b extends n64> =
 export type xor <a extends n64, b extends n64> = 
 	asN64<{ [k in Dg]: xorTable[a[k]][b[k]] }>;
 
-/** r[n] = b[n] == 1 ? 0 : a[n] */
-export type bitClear <a extends n64, b extends n64> = and<a, not<b>>;
 /** inverse of anding a and b */
 export type nand <a extends n64, b extends n64> = not<and<a, b>>;
 /** inverse of oring a and b */
 export type nor <a extends n64, b extends n64> = not<or<a, b>>;
 /** inverse of exclusive oring a and b */
 export type xnor <a extends n64, b extends n64> = not<xor<a, b>>;
+/** r[n] = b[n] == 1 ? 0 : a[n] */
+export type bitClear <a extends n64, b extends n64> = and<a, not<b>>;
+export type imply <a extends n64, b extends n64> = or<not<a>, b>;
 
 /** d: dg => count of set bits in d as byte */
 type onesInDg = {
@@ -78,6 +80,8 @@ export type clz <nb extends n64> = clzOp<nb, [0, 0]>;
 export type cto <nb extends n64> = ctz<not<nb>>;
 /** count leading (to left) ones in a nb, returns a byte */
 export type clo <nb extends n64> = clz<not<nb>>;
+
+export type cls <nb extends n64> = sign<nb> extends 0 ? clz<nb> : cto<nb>;
 
 /** d: dg => reverse_bits(d) */
 type revDg = {

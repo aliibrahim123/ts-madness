@@ -1,3 +1,4 @@
+import type { satisfies } from "../common/utils.ts";
 import type { sign } from "./comp.ts";
 import type { Bits, bits, Byte, Dg, n64, one, n68, zero } from "./format.ts";
 import type { and, not, not8, or } from "./logic.ts";
@@ -24,6 +25,9 @@ export type addOp <a extends Dg[], b extends Dg[], c extends 0 | 1 = 0> =
 export type add <a extends n64, b extends n64, carry extends 0 | 1 = 0> = addOp<a, b, carry>[1];
 /** subtraction of 2 nb */
 export type sub <a extends n64, b extends n64> = addOp<a, not<b>, 1>[1];
+export type subOp <a extends n64, b extends n64, carry extends 0 | 1 = 0> = 
+	addOp<a, not<b>, carry extends 1 ? 0 : 1> extends [infer carry, infer sum] ? 
+	[carry extends 1 ? 0 : 1, sum] : never;
 /** signed negation of a */
 export type neg <a extends n64> = addOp<not<a>, zero, 1>[1];
 /** absolute value of a */
@@ -53,12 +57,13 @@ type multDg <a extends n64, b extends Dg, state extends [res: Dg[], acc: n64]> =
 never : never;
 
 /** full multiplication of 2 nb, product is u128, returns [low, high] */
-export type mult <a extends n64, b extends n64> = 
+export type mult <a extends n64, b extends n64> = satisfies<
 	multDg<a, b[15], multDg<a, b[14], multDg<a, b[13], multDg<a, b[12],
 	multDg<a, b[11], multDg<a, b[10], multDg<a, b[9 ], multDg<a, b[8 ], 
 	multDg<a, b[7 ], multDg<a, b[6 ], multDg<a, b[5 ], multDg<a, b[4 ], 
 	multDg<a, b[3 ], multDg<a, b[2 ], multDg<a, b[1 ], multDg<a, b[0 ], 
 	[[], zero] >>>>>>>>>>>>>>>>
+, [low: n64, high: n64]>
 
 /* ------------------------------- /*
 			DANGER ZONE

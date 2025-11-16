@@ -7,6 +7,7 @@ import type { toCharsRev } from "../common/string.ts";
 import type { reverseObj, satisfies } from "../common/utils.ts";
 import type { neg } from "./arith.ts";
 import type { sign } from "./comp.ts";
+import type { asBase256 } from "./tables.ts";
 
 /** hexadicimal digit */
 export type Dg = 
@@ -21,6 +22,11 @@ export type n64 = [
 ];
 /** 8 bit number, 2 digits */
 export type Byte = [Dg, Dg];
+export type n12 = [Dg, Dg, Dg];
+/** 16 bit number, 4 digits */
+export type n16 = [Dg, Dg, Dg, Dg];
+/** 32 bit number, 8 digits */
+export type n32 = [Dg, Dg, Dg, Dg, Dg, Dg, Dg, Dg];
 /** 68 bit number, 17 digit */
 export type n68 = [...n64, Dg];
 
@@ -33,6 +39,7 @@ export type asN64 <nb extends {[K in Dg]: Dg}> = [
 /** number of all digits set to */
 export type allOf <dg extends Dg> = [dg, dg, dg, dg, dg, dg, dg, dg, dg, dg, dg, dg, dg, dg, dg, dg];
 export type zero = allOf<0>;
+export type zero16 = [0, 0, 0, 0];
 export type one = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 /** a digit in binary */
@@ -56,6 +63,15 @@ type bitsToDgTable = [
 export type bits2dg <nb extends Bits> =
 	satisfies<bitsToDgTable[nb[3]][nb[2]][nb[1]][nb[0]], Dg>;
 
+export type byte2n64 <nb extends Byte> =
+	[nb[0], nb[1], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+export type byte2base256 <nb extends Byte> = 
+	asBase256[nb[1]][nb[0]];
+
+export type n16ToBase256 <nb extends n16> =
+	[asBase256[nb[1]][nb[0]], asBase256[nb[3]][nb[2]]]
+
 /** b45, b0_3 => [b01, b2_5] */
 type u6_u4u2Table = {
 	0: {
@@ -78,6 +94,11 @@ type u6_u4u2Table = {
 /** split a u6 byte into high u4 (dg) and low u2 (quat) */
 export type u6_u4u2 <nb extends Byte> = 
 	u6_u4u2Table[satisfies<nb[1], Quat>][nb[0]]
+
+export type dgTou2u2 = {
+	0: [0, 0], 1: [1, 0], 2:  [2, 0], 3:  [3, 0], 4:  [0, 1], 5:  [1, 1], 6:  [2, 1], 7:  [3, 1], 
+	8: [0, 2], 9: [1, 2], 10: [2, 2], 11: [3, 2], 12: [0, 3], 13: [1, 3], 14: [2, 3], 15: [3, 3]
+}
 
 /** dg => hex str */
 type dg2str = {
