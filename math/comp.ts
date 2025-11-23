@@ -31,7 +31,7 @@ export type ucomp <a extends n64, b extends n64> =
 	never;
 
 /** check if a and b are equal */
-export type eq <a extends n64, b extends n64> = sub<a, b> extends 0 ? 1 : 0;
+export type eq <a extends n64, b extends n64> = a extends b ? 1 : 0;
 /** check if a is greater than b */
 export type gt <a extends n64, b extends n64> = comp<a, b> extends 1 ? 1 : 0;
 /** check if a is less than b */

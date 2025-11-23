@@ -3,8 +3,10 @@
 
 import type { add8 } from "../math/arith.ts";
 import type { Byte, n16, n16ToBase256, n32, n64, zero, zero16 } from "../math/format.ts";
+import type { execBranch } from "./branch.ts";
 import type { execDPI } from "./dpi.ts";
 import type { execDPR } from "./dpr.ts";
+import type { execMem } from "./mem.ts";
 
 export type Mem = Record<number, Record<number, n64>>;
 export type IRom = Record<number, Record<number, n32>>;
@@ -35,6 +37,7 @@ type exec <ext extends Extate, irom extends IRom> =
 	irom[pc1][pc0] extends infer ins extends n32 ?
 		ins[0] extends 0 ? execDPR<ins, ext> :
 		ins[1] extends 1 ? execDPI<ins, ext> :
-		
+		ins[2] extends 2 ? execMem<ins, ext> :
+		ins[2] extends 3 ? execBranch<ins, ext> :
 	
 never : never : never;

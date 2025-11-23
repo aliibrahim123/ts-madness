@@ -1,6 +1,6 @@
 import type { add8 } from "./arith.ts";
 import type { sign } from "./comp.ts";
-import type { asN64, Byte, Dg, n64 } from "./format.ts";
+import type { asN64, Byte, Dg, n16, n64 } from "./format.ts";
 import type { and as andTable, or as orTable, xor as xorTable } from "./tables.ts";
 
 /** nb: dg => ~nb */
@@ -23,6 +23,11 @@ export type or <a extends n64, b extends n64> =
 /** exclusive oring of two nb */
 export type xor <a extends n64, b extends n64> = 
 	asN64<{ [k in Dg]: xorTable[a[k]][b[k]] }>;
+	
+export type and16 <a extends n16, b extends n16> =
+	[andTable[a[0]][b[0]], andTable[a[1]][b[1]], andTable[a[2]][b[2]], andTable[a[3]][b[3]]];
+export type xor16 <a extends n16, b extends n16> =
+	[xorTable[a[0]][b[0]], xorTable[a[1]][b[1]], xorTable[a[2]][b[2]], xorTable[a[3]][b[3]]];
 
 /** inverse of anding a and b */
 export type nand <a extends n64, b extends n64> = not<and<a, b>>;
@@ -110,3 +115,9 @@ export type rev32 <nb extends n64> = [
 	nb[8], nb[9], nb[10], nb[11], nb[12], nb[13], nb[14], nb[15],
 	nb[0], nb[1], nb[2 ], nb[3 ], nb[4 ], nb[5 ], nb[6 ], nb[7 ]
 ];
+
+type redXor4 = {
+	0: 0, 1: 1, 2: 0, 3: 1, 4: 0, 5: 1, 6: 0, 7: 1, 8: 0, 9: 1, 10: 0, 11: 1, 12: 0, 13: 1, 14: 0, 15: 1	
+}
+export type redXor16 <nb extends n16> =
+	redXor4[xorTable[xorTable[nb[0]][nb[1]]][xorTable[nb[2]][nb[3]]]];

@@ -1,20 +1,21 @@
 import type { abs, add, addOp, div, mult, neg, sub, subOp } from "../math/arith.ts";
 import type { eq, gt, isNeg, isZero, max, min, ucomp, umax, umin } from "../math/comp.ts";
-import type { bit, bits, byte2n64, Dg, n16, n32, n64, one, n12, zero } from "../math/format.ts";
+import type { bit, bits, byte2n64, Dg, n16, n32, n64, one, n12, zero, Bits, n16ToN64, n64ToN16, Byte } from "../math/format.ts";
 import type { and, bitClear, clo, cls, clz, countBits, countZeros, cto, ctz, imply, nand, nor, not, or, rev, rev16, rev32, rev8, xnor, xor } from "../math/logic.ts";
-import type { funnelShift, rol, sar, shl, shr } from "../math/shift.ts";
-import type { dec2regs, dec3regs, dec4regs, readCond, write2Regs, writeCond, writeReg, writeRegWFlags } from "./common.ts";
+import type { funnelShift, rol, sar, shl, shr, signExt16, signExt32, signExt8 } from "../math/shift.ts";
+import type { dec2regs, dec3regs, dec4regs, decReg, readCond, write2Regs, writeCond, writeConds, writeReg, writeRegWFlags } from "./common.ts";
 import type { Extate, RegNb } from "./index.ts";
 
 export type execDPR <ins extends n32, ext extends Extate> = 
-	ins extends [any, infer secGrp, ...any] ?
+	ins extends [Dg, infer secGrp, ...Dg[]] ?
 		secGrp extends 0 ? exec2Src<ins, ext> :
 		secGrp extends 1 ? exec1Src<ins, ext> :
 		secGrp extends 2 ? exec3Src<ins, ext> :
+		secGrp extends 3 ? execOther<ins, ext> :
 never : never;
 
 type exec2Src <ins extends n32, ext extends Extate> = 
-	ins extends [any, any, infer op0, infer op1 extends Dg, ...infer regs extends n16] ?
+	ins extends [Dg, Dg, infer op0, infer op1 extends Dg, ...infer regs extends n16] ?
 	dec3regs<regs> extends [infer dst extends RegNb, infer src1 extends RegNb, infer src2 extends RegNb] ?
 		op0 extends 0 ? exec2SOp0<op1, ext, ext['regs'][src1], ext['regs'][src2], dst> :
 		op0 extends 1 ? exec2SOp1<op1, ext, ext['regs'][src1], ext['regs'][src2], dst> :
@@ -54,7 +55,7 @@ type exec2SOp1 <op extends Dg, ext extends Extate, src1 extends n64, src2 extend
 never;
 
 type exec1Src <ins extends n32, ext extends Extate> = 
-	ins extends [any, any, infer op0, infer op1 extends Dg, infer op2 extends Dg, ...infer regs extends n12] ?
+	ins extends [Dg, Dg, infer op0, infer op1 extends Dg, infer op2 extends Dg, ...infer regs extends n12] ?
 	dec2regs<regs> extends [infer dst extends RegNb, infer src extends RegNb] ?
 		op0 extends 0 ? exec1SOp0<op1, ext, ext['regs'][src], dst> :
 		op0 extends 1 ? exec1SOp1<op1, op2, ext, ext['regs'][src], dst> :
@@ -73,6 +74,9 @@ type exec1SOp0 <op extends Dg, ext extends Extate, src extends n64, dst extends 
 	op extends 9  ? writeReg<ext, dst, rev8<src>> :
 	op extends 10 ? writeReg<ext, dst, rev16<src>> :
 	op extends 11 ? writeReg<ext, dst, rev32<src>> :
+	op extends 12 ? writeReg<ext, dst, signExt8<src>> :
+	op extends 13 ? writeReg<ext, dst, signExt16<src>> :
+	op extends 14 ? writeReg<ext, dst, signExt32<src>> :
 never;
 
 type exec1SOp1 <op1 extends Dg, op2 extends Dg, ext extends Extate, src extends n64, dst extends RegNb> =
@@ -82,8 +86,8 @@ type exec1SOp1 <op1 extends Dg, op2 extends Dg, ext extends Extate, src extends 
 	op1 extends 3 ? writeReg<ext, dst, readCond<ext, op2, 1> extends 0 ? src : not<src>> :
 	op1 extends 4 ? writeReg<ext, dst, readCond<ext, op2, 0> extends 0 ? src : neg<src>> :
 	op1 extends 5 ? writeReg<ext, dst, readCond<ext, op2, 1> extends 0 ? src : neg<src>> :
-	op1 extends 6 ? writeCond<ext, op2, and<src, ext['regs'][dst]> extends 0 ? 1 : 0> :
-	op1 extends 7 ? writeCond<ext, op2, and<src, ext['regs'][dst]> extends 0 ? 0 : 1> :
+	op1 extends 6 ? writeCond<ext, op2, and<src, ext['regs'][dst]> extends zero ? 1 : 0> :
+	op1 extends 7 ? writeCond<ext, op2, and<src, ext['regs'][dst]> extends zero ? 0 : 1> :
 	op1 extends 8 ? writeCond<ext, op2, and<src, ext['regs'][dst]> extends src ? 1 : 0> :
 	op1 extends 9 ? writeCond<ext, op2, eq<src, ext['regs'][dst]>> :
 	op1 extends 10 ? writeCond<ext, op2, eq<src, ext['regs'][dst]> extends 0 ? 1 : 0> :
@@ -94,7 +98,7 @@ type exec1SOp1 <op1 extends Dg, op2 extends Dg, ext extends Extate, src extends 
 never;
 
 type exec3Src <ins extends n32, ext extends Extate> = 
-	ins extends [any, any, infer op, ...infer regs extends [...n16, Dg]] ?
+	ins extends [Dg, Dg, infer op, ...infer regs extends [...n16, Dg]] ?
 	dec4regs<regs> extends 
 		[infer dst extends RegNb, infer src1 extends RegNb, infer src2 extends RegNb, infer src3 extends RegNb] ?
 	[ext['regs'][src2], ext['regs'][src3]] extends [infer src2 extends n64, infer src3 extends n64] ?
@@ -105,6 +109,18 @@ type exec3Src <ins extends n32, ext extends Extate> =
 		op extends 4 ? writeReg<ext, dst, add<ext['regs'][src1], add<src2, src3>>> :
 		op extends 5 ? writeReg<ext, dst, funnelShift<ext['regs'][src1], src2, [src3[0], mod4[src3[1]]]>> :
 never : never : never : never;
+
+type execOther <ins extends n32, ext extends Extate> =
+	ins extends [Dg, Dg, infer op0 extends Dg, ...Dg[]] ?
+	op0 extends 0 ? 
+		ins extends [Dg, Dg, Dg, infer op1 extends Dg, Dg, Dg, ...infer reg extends Byte] ?
+		[bits[reg[0]], bits[reg[1]]] extends [infer r0 extends Bits, infer r1 extends Bits] ?
+			op1 extends 0 ? writeReg<ext, decReg<[r0[3], ...r1]>, n16ToN64<ext['conds']>> :
+			op1 extends 1 ? writeConds<ext, n64ToN16<ext['regs'][decReg<[r0[3], ...r1]>]>> :
+		never : never : never :
+never : never;
+	
+
 
 export type mod4 = {
 	0: 0, 1: 1, 2:  2, 3:  3, 4:  0, 5:  1, 6:  2, 7:  3,
