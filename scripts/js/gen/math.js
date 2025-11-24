@@ -11,6 +11,6 @@ chunks.push(`/** carry: bit, a: dg, b: dg => [sum: dg, carry: bit] */ export typ
 `);
 chunks.push(`/** amount: quat, nb: dg, fill: dg => high_dg([nb, fill] << 4) */ export type shift = {0: ${table(16, 16, (x, y) => y)}, 1: ${table(16, 16, (x, y) => (y << 1 | x >> 3) % 16)}, 2: ${table(16, 16, (x, y) => (y << 2 | x >> 2) % 16)}, 3: ${table(16, 16, (x, y) => (y << 3 | x >> 1) % 16)}};
 `);
-chunks.push(`export type asBase256 = ${table(16, 16, (x, y) => y << 4 | x)};
+chunks.push(`/** n1: dg, n0: dg => n: base256 */ export type asBase256 = ${table(16, 16, (x, y) => y << 4 | x)};
 `);
 writeFile("./math/tables.ts", chunks.join(""));

@@ -46,6 +46,7 @@ type onesInDg = {
 } 
 /** count set bits (ones) in a nb, returns a byte */
 export type countBits <nb extends n64> = add8<
+	// count in each dg, then sum all
 	add8<
 		add8<add8<onesInDg[nb[0 ]], onesInDg[nb[1 ]]>, add8<onesInDg[nb[2 ]], onesInDg[nb[3 ]]>>,
 		add8<add8<onesInDg[nb[4 ]], onesInDg[nb[5 ]]>, add8<onesInDg[nb[6 ]], onesInDg[nb[7 ]]>>
@@ -85,7 +86,7 @@ export type clz <nb extends n64> = clzOp<nb, [0, 0]>;
 export type cto <nb extends n64> = ctz<not<nb>>;
 /** count leading (to left) ones in a nb, returns a byte */
 export type clo <nb extends n64> = clz<not<nb>>;
-
+/** count leading (to left) sign bit in a nb, returns a byte */
 export type cls <nb extends n64> = sign<nb> extends 0 ? clz<nb> : cto<nb>;
 
 /** d: dg => reverse_bits(d) */
@@ -116,8 +117,11 @@ export type rev32 <nb extends n64> = [
 	nb[0], nb[1], nb[2 ], nb[3 ], nb[4 ], nb[5 ], nb[6 ], nb[7 ]
 ];
 
-type redXor4 = {
+/** d: dg => b0 ^ b1 ^ b2 ^ b3 */
+type redXorDg = {
 	0: 0, 1: 1, 2: 0, 3: 1, 4: 0, 5: 1, 6: 0, 7: 1, 8: 0, 9: 1, 10: 0, 11: 1, 12: 0, 13: 1, 14: 0, 15: 1	
 }
+/** xor all bits of a n16, returns a bit */
 export type redXor16 <nb extends n16> =
-	redXor4[xorTable[xorTable[nb[0]][nb[1]]][xorTable[nb[2]][nb[3]]]];
+	// red_xor_dg(d0 ^ d1 ^ d2 ^ d3)
+	redXorDg[xorTable[xorTable[nb[0]][nb[1]]][xorTable[nb[2]][nb[3]]]];

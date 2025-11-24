@@ -20,6 +20,6 @@ chunks.push(`/** amount: quat, nb: dg, fill: dg => high_dg([nb, fill] << 4) */ e
 	table(16, 16, (x, y) => (y << 3 | x >> 1) % 16)
 }};\n`);
 
-chunks.push(`export type asBase256 = ${table(16, 16, (x, y) => y << 4 | x)};\n`)
+chunks.push(`/** n1: dg, n0: dg => n: base256 */ export type asBase256 = ${table(16, 16, (x, y) => y << 4 | x)};\n`)
 
 writeFile('./math/tables.ts', chunks.join(''));

@@ -1,7 +1,7 @@
 import type { satisfies } from "../common/utils.ts";
 import type { sign } from "./comp.ts";
-import type { Bits, bits, Byte, Dg, n64, one, n68, zero } from "./format.ts";
-import type { and, not, not8, or } from "./logic.ts";
+import type { Bits, bits, Byte, Dg, n64, one, n68, zero, n16 } from "./format.ts";
+import type { not, not8, or } from "./logic.ts";
 import type { shift128, shift68 } from "./shift.ts";
 import type { add as addTable } from "./tables.ts";
 
@@ -38,6 +38,9 @@ export type add8 <a extends Byte, b extends Byte, carry extends 0 | 1 = 0> =
 	addDg<a, b, 1, addDg<a, b, 0, [carry, []] >>[1];
 /** subtraction of 2 bytes */
 export type sub8 <a extends Byte, b extends Byte> = add8<a, not8<b>, 1>;
+/** addition of 2 n16 */
+export type add16 <a extends n16, b extends n16> = 
+	addDg<a, b, 3, addDg<a, b, 2, addDg<a, b, 1, addDg<a, b, 0, [0, []] >> >>[1];
 
 type zero68 = [0, ...zero];
 /** addition of 2 n68 */

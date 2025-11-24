@@ -16,15 +16,17 @@ export type Dg =
 
 /** quaternary digit */
 export type Quat = 0 | 1 | 2 | 3;
+/** octal digit */
 export type Octal = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-/** 64 little endian bit number, 16 digits */
+/** 64 bit little endian number, 16 digits */
 export type n64 = [
 	Dg, Dg, Dg, Dg, Dg, Dg, Dg, Dg, 
 	Dg, Dg, Dg, Dg, Dg, Dg, Dg, Dg
 ];
 /** 8 bit number, 2 digits */
 export type Byte = [Dg, Dg];
+/** 12 bit number, 3 digits */
 export type n12 = [Dg, Dg, Dg];
 /** 16 bit number, 4 digits */
 export type n16 = [Dg, Dg, Dg, Dg];
@@ -39,7 +41,7 @@ export type asN64 <nb extends {[K in Dg]: Dg}> = [
 	nb[8], nb[9], nb[10], nb[11], nb[12], nb[13], nb[14], nb[15]
 ];
 
-/** number of all digits set to */
+/** number of all digits set to dg */
 export type allOf <dg extends Dg> = [dg, dg, dg, dg, dg, dg, dg, dg, dg, dg, dg, dg, dg, dg, dg, dg];
 export type zero = allOf<0>;
 export type zero16 = [0, 0, 0, 0];
@@ -57,18 +59,23 @@ export type bit <nb extends n64, base extends Dg, bit extends Quat> =
 export type bits2dg <nb extends Bits> =
 	satisfies<bitsToDg[nb[3]][nb[2]][nb[1]][nb[0]], Dg>;
 
+/** zero extend a byte to a n64 */
 export type byte2n64 <nb extends Byte> =
 	[nb[0], nb[1], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+/** zero extend a n16 to a n64 */
 export type n16ToN64 <nb extends n16> =
 	[nb[0], nb[1], nb[2], nb[3], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+/** extract first n16 from a n64 */
 export type n64ToN16 <nb extends n64> =
 	[nb[0], nb[1], nb[2], nb[3]]
 
+/** convert a byte into base 256 */
 export type byte2base256 <nb extends Byte> = 
 	asBase256[nb[1]][nb[0]];
 
+/** convert a n16 into base 256 */
 export type n16ToBase256 <nb extends n16> =
 	[asBase256[nb[1]][nb[0]], asBase256[nb[3]][nb[2]]]
 
@@ -76,9 +83,11 @@ export type n16ToBase256 <nb extends n16> =
 export type u6_u4u2 <nb extends Byte> = 
 	u6_u4u2Table[satisfies<nb[1], Quat>][nb[0]]
 
+/** merge a u6 from a low u2 (quat) and high u4 (dg) */
 export type u2u4_u6 <nb extends [Quat, Dg]> =
 	u2u4_u6Table[nb[1]][nb[0]]
 
+/** split a dg into low and high u2 (quat) */
 export type dgTou2u2 = dgTou2u2Table
 
 /** hex str => dg */
@@ -135,9 +144,11 @@ export type nb2bin <nb extends n64> = `${
 	dg2bin[nb[3]] }${dg2bin[nb[2]] }${dg2bin[nb[1]] }${dg2bin[nb[0]]
 }`
 
-export type f = 15;
+/** repeats 1 n times */
 export type nOnes <width extends Byte> =
 	nOnesTable[satisfies<width[1], Quat>][width[0]];
+
+/** n: dg => n % 8 */
 export type mod8 = {
 	0: 0; 1: 1; 2: 2; 3: 3; 4: 4; 5: 5; 6: 6; 7: 7; 8: 0; 9: 1; 10: 2; 11: 3; 12: 4; 13: 5; 14: 6; 15: 7;
 };

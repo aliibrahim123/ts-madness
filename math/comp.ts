@@ -21,6 +21,7 @@ export type comp <a extends n64, b extends n64> =
           	sign<a> extends 0 ? 1 : -1 :
 	never;
 
+/** unsigned compare a and b, return 0 if eq, 1 if a gt, -1 if a lt */
 export type ucomp <a extends n64, b extends n64> =
 	// compute diff
 	subOp<a, b> extends [infer carry, infer diff extends n64] ?
@@ -41,5 +42,7 @@ export type lt <a extends n64, b extends n64> = comp<a, b> extends -1 ? 1 : 0;
 export type min <a extends n64, b extends n64> = gt<a, b> extends true ? b : a;
 /** return the maximum of a and b */
 export type max <a extends n64, b extends n64> = gt<a, b> extends true ? a : b;
+/** return the unsigned minimum of a and b */
 export type umin <a extends n64, b extends n64> = ucomp<a, b> extends -1 ? b : a;
+/** return the unsigned maximum of a and b */
 export type umax <a extends n64, b extends n64> = ucomp<a, b> extends -1 ? a : b;
