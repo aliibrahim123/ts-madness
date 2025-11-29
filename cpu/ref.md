@@ -236,7 +236,7 @@ op: 12-15
 | **`bcr`** | `7` | bit clear of `src1` with immediate |
 | **`add`** | `8` | addition of `src1` with immediate |
 | **`sub`** | `9` | subtraction of `src1` with immediate |
-| **`sub`** | `10` | subtraction of immediate with `src1` |
+| **`rsb`** | `10` | subtraction of immediate with `src1` |
 | **`comp.eq`** | `12` | set condition `cond` to `1` if `src1` is equal to `imd` |
 | **`comp.ne`** | `13` | set condition `cond` to `1` if `src1` is not equal to `imd` |
 | **`comp.gt`** | `14` | set condition `cond` to `1` if `src1` is greater than `imd` |
