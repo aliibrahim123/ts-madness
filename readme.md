@@ -25,11 +25,11 @@ using DUY (do the universe yourself), a type engineering degree and and a bit of
 just for fun, and a humble question.
 
 ### is this a good learning resource?
-**If you are looking for standard typeScript**: You are in the wrong place.
+**If you are looking for standard typeScript**: You are in the wrong place.    
 **If you are looking for forbidden type magic**: want to learn how to remodel the universe using nothing but `infer` and recursion, welcome home.
 
 ### what it costs?
-nothing, just recursive infered pain and existencial rethinking.     
+nothing, just recursive infered pain and execcively deep existencial rethinking.     
 no compilers were harmed in the making of this repo.
 
 ### is there more to come?
