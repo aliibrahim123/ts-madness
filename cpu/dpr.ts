@@ -99,15 +99,15 @@ type exec1SOp1 <op1 extends Dg, op2 extends Dg, ext extends Extate, src extends 
 	op1 extends 3 ? writeReg<ext, dst, readCond<ext, op2, 1> extends 0 ? src : not<src>> :      // cnot.n
 	op1 extends 4 ? writeReg<ext, dst, readCond<ext, op2, 0> extends 0 ? src : neg<src>> :      // cneg
 	op1 extends 5 ? writeReg<ext, dst, readCond<ext, op2, 1> extends 0 ? src : neg<src>> :      // cneg.n
-	op1 extends 6 ? writeCond<ext, op2, and<src, ext['regs'][dst]> extends zero ? 1 : 0> :      // noner
-	op1 extends 7 ? writeCond<ext, op2, and<src, ext['regs'][dst]> extends zero ? 0 : 1> :      // anyr
-	op1 extends 8 ? writeCond<ext, op2, and<src, ext['regs'][dst]> extends src ? 1 : 0> :       // allr
-	op1 extends 9 ? writeCond<ext, op2, eq<src, ext['regs'][dst]>> :                            // cmp.eq
-	op1 extends 10 ? writeCond<ext, op2, eq<src, ext['regs'][dst]> extends 0 ? 1 : 0> :         // cmp.ne
-	op1 extends 11 ? writeCond<ext, op2, gt<src, ext['regs'][dst]>> :                           // cmp.gt
-	op1 extends 12 ? writeCond<ext, op2, gt<src, ext['regs'][dst]> extends 0 ? 1 : 0> :         // cmp.le
-	op1 extends 13 ? writeCond<ext, op2, ucomp<src, ext['regs'][dst]> extends 1 ? 1 : 0> :      // ucmp.gt
-	op1 extends 14 ? writeCond<ext, op2, ucomp<src, ext['regs'][dst]> extends 1 ? 0 : 1> :      // ucmp.le
+	op1 extends 6 ? writeCond<ext, op2, and<ext['regs'][dst], src> extends zero ? 1 : 0> :      // noner
+	op1 extends 7 ? writeCond<ext, op2, and<ext['regs'][dst], src> extends zero ? 0 : 1> :      // anyr
+	op1 extends 8 ? writeCond<ext, op2, and<ext['regs'][dst], src> extends src ? 1 : 0> :       // allr
+	op1 extends 10 ? writeCond<ext, op2, eq<ext['regs'][dst], src>> :                           // cmp.eq
+	op1 extends 11 ? writeCond<ext, op2, eq<ext['regs'][dst], src> extends 0 ? 1 : 0> :         // cmp.ne
+	op1 extends 12 ? writeCond<ext, op2, gt<ext['regs'][dst], src>> :                           // cmp.gt
+	op1 extends 13 ? writeCond<ext, op2, gt<ext['regs'][dst], src> extends 0 ? 1 : 0> :         // cmp.le
+	op1 extends 14 ? writeCond<ext, op2, ucomp<ext['regs'][dst], src> extends 1 ? 1 : 0> :      // ucmp.gt
+	op1 extends 15 ? writeCond<ext, op2, ucomp<ext['regs'][dst], src> extends 1 ? 0 : 1> :      // ucmp.le
 never;
 
 /** execute 3 source instruction, grp = 0.2 */
@@ -126,10 +126,10 @@ type exec3Src <ins extends n32, ext extends Extate> =
 		op extends 5 ? writeReg<ext, dst, funnelShift<ext['regs'][src1], src2, [src3[0], mod4[src3[1]]]>> : // fush
 never : never : never : never;
 
-/** execute other dsp instruction, grp = 0.4 */
+/** execute other dsp instruction, grp = 0.3 */
 type execOther <ins extends n32, ext extends Extate> =
 	ins extends [Dg, Dg, infer op0 extends Dg, ...Dg[]] ?
-	// grp = 0.4.1
+	// grp = 0.3.0
 	op0 extends 0 ? 
 		ins extends [Dg, Dg, Dg, infer op1 extends Dg, Dg, Dg, ...infer reg extends Byte] ?
 		[bits[reg[0]], bits[reg[1]]] extends [infer r0 extends Bits, infer r1 extends Bits] ?

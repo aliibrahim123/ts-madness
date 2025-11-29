@@ -2,7 +2,7 @@ import type { satisfies } from "../common/utils.ts";
 import type { add, sub } from "../math/arith.ts";
 import type { eq, gt, lt } from "../math/comp.ts";
 import type { Bits, bits, bits2dg, Byte, Dg, dgTou2u2, n12, n16, n32, n64, Quat, u2u4_u6, zero } from "../math/format.ts";
-import type { and, and16, bitClear, imply, nand, nor, not, or, redXor16, xnor, xor, xor16 } from "../math/logic.ts";
+import type { and, and16, bitClear, countBits, countBits16 as cnt16, imply, nand, nor, not, or, redXor16, xnor, xor, xor16 } from "../math/logic.ts";
 import type { bfieldExtract, bfieldInsert, rol, sar, shl, shr } from "../math/shift.ts";
 import type { dec2regs, decReg, writeCond, writeReg } from "./common.ts";
 import type { Extate, RegNb } from "./index.ts";
@@ -13,7 +13,8 @@ export type execDPI <ins extends n32, ext extends Extate> =
 		// route by major op
 		op0 extends 0 | 1 | 2 | 3 | 4 ? exec12Imd<ins, ext> : 
 		op0 extends 6 ? execMov<ins, ext> :
-		op0 extends 7 ? execOp7<ins, ext> :
+		op0 extends 7 ? execCond<ins, ext> :
+		op0 extends 8 ? execShift<ins, ext> :
 	never : never;
 
 /** execute 12imd instruction, grp = 1.{0, 1, 2, 3, 4} */
@@ -41,17 +42,17 @@ type exec12Imd <ins extends n32, ext extends Extate> =
 			op1 extends [1, 1] ? writeReg<ext, dst, sub<lowImd<imd>, src>> :        // sub imd, src
 			never :
 		op0 extends 3 ?
-			// dec imd
-			bfieldImd<imd> extends [infer offset extends Byte, infer width extends Byte] ?
-			op1 extends [0, 0] ? writeReg<ext, dst, bfieldExtract<src, offset, width>> :   // bext
-			op1 extends [1, 0] ? writeReg<ext, dst, bfieldInsert<src, ext['regs'][dst], offset, width>> : // bins
-			never : never :
-		op0 extends 4 ?
 			op1 extends [0, 0] ? writeCond<ext, satisfies<dst, Dg>, eq<src, lowImd<imd>>> : // cmp.eq imd
 			op1 extends [1, 0] ? writeCond<ext, satisfies<dst, Dg>, eq<src, lowImd<imd>> extends 1 ? 0 : 1> : //comp.ne imd
 			op1 extends [0, 1] ? writeCond<ext, satisfies<dst, Dg>, gt<src, lowImd<imd>>> : // cmp.gt imd
 			op1 extends [1, 1] ? writeCond<ext, satisfies<dst, Dg>, lt<src, lowImd<imd>>> : // cmp.lt imd
 			never :
+		op0 extends 4 ?
+			// dec imd
+			bfieldImd<imd> extends [infer offset extends Byte, infer width extends Byte] ?
+			op1 extends [0, 0] ? writeReg<ext, dst, bfieldExtract<src, offset, width>> :   // bext
+			op1 extends [1, 0] ? writeReg<ext, dst, bfieldInsert<src, ext['regs'][dst], offset, width>> : // bins
+			never : never :
 	never : never : never : never;
 
 /** execute mov imd instruction, grp = 1.6 */
@@ -62,26 +63,29 @@ type execMov <ins extends n32, ext extends Extate> =
 	decReg<[op[3], ...dst]> extends infer dst extends RegNb ?
 	writeReg<ext, dst, 
 		op[0] extends 0 ? movImd<imd, [op[1], op[2]]> : // mov imd
-		// movk imd: mov_imd(imd) | bcl(dst, ~(mov_mask: mov_imd(0xffff)))
+		// movk imd: mov_imd(imd) | bcl(dst, (mov_mask: mov_imd(0xffff)))
 		or<movImd<imd, [op[2], op[1]]>, and<ext['regs'][dst], not<movImd<[15, 15, 15, 15], [op[1], op[2]]>>>> 
 	> :
 never : never : never;
 	
-/** exec other imd instruction, grp = 1.7 */
-type execOp7 <ins extends n32, ext extends Extate> =
+/** exec conditions instruction, grp = 1.7 */
+type execCond <ins extends n32, ext extends Extate> =
 	ins extends [Dg, Dg, infer op extends 0 | 1 | 2 | 3, infer dst extends Dg, ...infer mask extends n16] ?
-		op extends 0 ? writeCond<ext, dst, and16<ext['conds'], mask> extends zero ? 1 : 0> :        // none
-		op extends 1 ? writeCond<ext, dst, and16<ext['conds'], mask> extends zero ? 0 : 1> :        // any
-		op extends 2 ? writeCond<ext, dst, and16<ext['conds'], mask> extends mask ? 1 : 0> :        // all
-		op extends 3 ? writeCond<ext, dst, redXor16<and16<ext['conds'], mask>> extends 1 ? 1 : 0> : // odd
+		op extends 0 ? writeCond<ext, dst, and16<ext['conds'], mask> extends zero ? 1 : 0> :      // none
+		op extends 1 ? writeCond<ext, dst, and16<ext['conds'], mask> extends zero ? 0 : 1> :      // any
+		op extends 2 ? writeCond<ext, dst, and16<ext['conds'], mask> extends mask ? 1 : 0> :      // all
+		op extends 3 ? writeCond<ext, dst, cnt16<and16<ext['conds'], mask>> extends 1  ? 1 : 0> : // only
 		never :
 	ins extends [Dg, Dg, 4, infer op extends Dg, infer mask extends n16] ? // ncond
 		op extends 0 ? { 
 			pc: ext['pc'], regs: ext['regs'], mem: ext['mem'], conds: xor16<ext['conds'], mask> 
 		} :
 		never : 
-	// shift group, grp = 1.7.5
-	ins extends [Dg, Dg, 5, infer op extends Dg, infer shlow extends Dg, ...infer regs extends n12] ?
+never;
+
+// shift group, grp = 1.8
+type execShift <ins extends n32, ext extends Extate> =
+	ins extends [Dg, Dg, 0, infer op extends Dg, infer shlow extends Dg, ...infer regs extends n12] ?
 		// dec regs
 		[dgTou2u2[regs[0]], dec2regs<regs>] extends 
 			[[infer shhi extends Quat, Dg], [infer dst extends RegNb, infer src extends RegNb]] ?

@@ -57,6 +57,11 @@ export type countBits <nb extends n64> = add8<
 >;
 /** count unset bits (zero) in a nb, returns a byte */
 export type countZeros <nb extends n64> = countBits<not<nb>>
+/** count set bits (ones) in a n16, returns a dg */
+export type countBits16 <nb extends n16> = 
+	// count in each dg, then sum all
+	add8<add8<onesInDg[nb[0]], onesInDg[nb[1]]>, add8<onesInDg[nb[2]], onesInDg[nb[3]]>>[0]
+
 
 /** d: dg => count of zeros at right of d */
 type ctzDg = {
