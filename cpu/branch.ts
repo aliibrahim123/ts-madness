@@ -33,6 +33,7 @@ export type execBranch <ins extends n32, ext extends Extate> =
 			readCond<ext, cond, 1> extends 1 ? jumpToReg<ext, reg> : ext : never :
 never : never;
 
+/** save pc and jump to an address */
 type jumpAndLink <ext extends Extate, address extends n16, link extends RegNb> = {
 	pc: add16<address, [15, 15, 15, 15]>, conds: ext['conds'], mem: ext['mem'], 
 	regs: link extends 0 ? ext['regs'] : put<ext['regs'], link, ext['pc']>
