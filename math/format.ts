@@ -7,7 +7,7 @@ import type { toCharsRev } from "../common/string.ts";
 import type { reverseObj, satisfies } from "../common/utils.ts";
 import type { neg } from "./arith.ts";
 import type { sign } from "./comp.ts";
-import type { bin2dg as bin2dgTable, bits as bitsTable, bitsToDg as bitsToDg, dg2str as dg2strTable, nOnes as nOnesTable, u2u4_u6 as u2u4_u6Table, u6_u4u2 as u6_u4u2Table, dgTou2u2 as dgTou2u2Table } from "./format_tables.ts";
+import type { bin2dg as bin2dgTable, bits as bitsTable, bitsToDg as bitsToDg, dg2str as dg2strTable, nOnes as nOnesTable, u2u4_u6 as u2u4_u6Table, u6_u4u2 as u6_u4u2Table, dgTou2u2 as dgTou2u2Table, u2u2ToDg as u2u2ToDgTable } from "./format_tables.ts";
 import type { asBase256 } from "./tables.ts";
 
 /** hexadicimal digit */
@@ -55,6 +55,8 @@ export type bits = bitsTable;
 export type bit <nb extends n64, base extends Dg, bit extends Quat> = 
 	bits[nb[base]][bit]
 
+export type quat2bits = [[0, 0], [1, 0], [0, 1], [1, 1]];
+
 /** convert a bit array to a dg */
 export type bits2dg <nb extends Bits> =
 	satisfies<bitsToDg[nb[3]][nb[2]][nb[1]][nb[0]], Dg>;
@@ -89,6 +91,8 @@ export type u2u4_u6 <nb extends [Quat, Dg]> =
 
 /** split a dg into low and high u2 (quat) */
 export type dgTou2u2 = dgTou2u2Table
+
+export type u2u2ToDg <nb extends [Quat, Quat]> = u2u2ToDgTable[nb[1]][nb[0]]
 
 /** hex str => dg */
 type str2dg = reverseObj<dg2strTable>
