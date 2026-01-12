@@ -1,8 +1,8 @@
 import type { satisfies } from "../common/utils.ts";
 import type { add, sub } from "../math/arith.ts";
 import type { eq, gt, lt } from "../math/comp.ts";
-import type { Bits, bits, bits2dg, Byte, Dg, dgTou2u2, n12, n16, n32, n64, Quat, u2u4_u6, zero } from "../math/format.ts";
-import type { and, and16, bitClear, countBits, countBits16 as cnt16, imply, nand, nor, not, or, redXor16, xnor, xor, xor16 } from "../math/logic.ts";
+import type { Bits, bits, Byte, Dg, dgTou2u2, n12, n16, n32, n64, Quat, u2u4_u6, zero } from "../math/format.ts";
+import type { and, and16, bitClear, countBits16 as cnt16, imply, nand, nor, not, or, redXor16, xnor, xor, xor16 } from "../math/logic.ts";
 import type { bfieldExtract, bfieldInsert, rol, sar, shl, shr } from "../math/shift.ts";
 import type { dec2regs, decReg, writeCond, writeReg } from "./common.ts";
 import type { Extate, RegNb } from "./index.ts";
@@ -19,39 +19,46 @@ export type execDPI <ins extends n32, ext extends Extate> =
 
 /** execute 12imd instruction, grp = 1.{0, 1, 2, 3, 4} */
 type exec12Imd <ins extends n32, ext extends Extate> =
-	ins extends [Dg, infer op0 extends Dg, ...infer regs extends n12, ...infer imd extends n12] ?
+	ins extends [
+		Dg, infer op0 extends Dg, infer r0 extends Dg, infer r1 extends Dg, 
+		infer r2 extends Dg, ...infer imd extends n12
+	] ?
 	// dec regs
-	[bits[regs[0]], dec2regs<regs>] extends 
+	[bits[r0], dec2regs<[r0, r1, r2]>] extends 
 		[infer op1 extends Bits, [infer dst extends RegNb, infer src extends RegNb]] ?
 	ext['regs'][src] extends infer src extends n64 ?
 		op0 extends 0 ?
-			op1 extends [0, 0] ? writeReg<ext, dst, and<src, logicImd<imd>>> :      // and imd
-			op1 extends [1, 0] ? writeReg<ext, dst, or<src, logicImd<imd>>> :       // or imd
-			op1 extends [0, 1] ? writeReg<ext, dst, xor<src, logicImd<imd>>> :      // xor imd
-			op1 extends [1, 1] ? writeReg<ext, dst, imply<src, logicImd<imd>>> :    // imp imd
+			op1 extends [0, 0, ...any] ? writeReg<ext, dst, and<src, logicImd<imd>>> :      // and imd
+			op1 extends [1, 0, ...any] ? writeReg<ext, dst, or<src, logicImd<imd>>> :       // or imd
+			op1 extends [0, 1, ...any] ? writeReg<ext, dst, xor<src, logicImd<imd>>> :      // xor imd
+			op1 extends [1, 1, ...any] ? writeReg<ext, dst, imply<src, logicImd<imd>>> :    // imp imd
 			never :
 		op0 extends 1 ?
-			op1 extends [0, 0] ? writeReg<ext, dst, nand<src, logicImd<imd>>> :     // nand imd
-			op1 extends [1, 0] ? writeReg<ext, dst, nor<src, logicImd<imd>>> :      // nor imd
-			op1 extends [0, 1] ? writeReg<ext, dst, xnor<src, logicImd<imd>>> :     // xnor imd
-			op1 extends [1, 1] ? writeReg<ext, dst, bitClear<src, logicImd<imd>>> : // bcl imd
+			op1 extends [0, 0, ...any] ? writeReg<ext, dst, nand<src, logicImd<imd>>> :     // nand imd
+			op1 extends [1, 0, ...any] ? writeReg<ext, dst, nor<src, logicImd<imd>>> :      // nor imd
+			op1 extends [0, 1, ...any] ? writeReg<ext, dst, xnor<src, logicImd<imd>>> :     // xnor imd
+			op1 extends [1, 1, ...any] ? writeReg<ext, dst, bitClear<src, logicImd<imd>>> : // bcl imd
 			never :
-		op0 extends 2 ?
-			op1 extends [0, 0] ? writeReg<ext, dst, add<src, lowImd<imd>>> :        // add imd
-			op1 extends [1, 0] ? writeReg<ext, dst, sub<src, lowImd<imd>>> :        // sub src, imd
-			op1 extends [1, 1] ? writeReg<ext, dst, sub<lowImd<imd>, src>> :        // sub imd, src
+		op0 extends 2 ? 
+			op1 extends [0, 0, ...any] ? writeReg<ext, dst, add<src, lowImd<imd>>> :        // add imd
+			op1 extends [1, 0, ...any] ? writeReg<ext, dst, sub<src, lowImd<imd>>> :        // sub src, imd
+			op1 extends [1, 1, ...any] ? writeReg<ext, dst, sub<lowImd<imd>, src>> :        // sub imd, src
 			never :
 		op0 extends 3 ?
-			op1 extends [0, 0] ? writeCond<ext, satisfies<dst, Dg>, eq<src, lowImd<imd>>> : // cmp.eq imd
-			op1 extends [1, 0] ? writeCond<ext, satisfies<dst, Dg>, eq<src, lowImd<imd>> extends 1 ? 0 : 1> : //comp.ne imd
-			op1 extends [0, 1] ? writeCond<ext, satisfies<dst, Dg>, gt<src, lowImd<imd>>> : // cmp.gt imd
-			op1 extends [1, 1] ? writeCond<ext, satisfies<dst, Dg>, lt<src, lowImd<imd>>> : // cmp.lt imd
+			op1 extends [0, 0, ...any] ? 
+				writeCond<ext, satisfies<dst, Dg>, eq<src, lowImd<imd>>> : // cmp.eq imd
+			op1 extends [1, 0, ...any] ? 
+				writeCond<ext, satisfies<dst, Dg>, eq<src, lowImd<imd>> extends 1 ? 0 : 1> : //comp.ne imd
+			op1 extends [0, 1, ...any] ? 
+				writeCond<ext, satisfies<dst, Dg>, gt<src, lowImd<imd>>> : // cmp.gt imd
+			op1 extends [1, 1, ...any] ? 
+				writeCond<ext, satisfies<dst, Dg>, lt<src, lowImd<imd>>> : // cmp.lt imd
 			never :
 		op0 extends 4 ?
 			// dec imd
-			bfieldImd<imd> extends [infer offset extends Byte, infer width extends Byte] ?
-			op1 extends [0, 0] ? writeReg<ext, dst, bfieldExtract<src, offset, width>> :   // bext
-			op1 extends [1, 0] ? writeReg<ext, dst, bfieldInsert<src, ext['regs'][dst], offset, width>> : // bins
+			bfieldImd<imd> extends [infer offset extends Byte, infer width extends Byte, ...any] ?
+			op1 extends [0, 0, ...any] ? writeReg<ext, dst, bfieldExtract<src, offset, width>> :   // bext
+			op1 extends [1, 0, ...any] ? writeReg<ext, dst, bfieldInsert<src, ext['regs'][dst], offset, width>> : // bins
 			never : never :
 	never : never : never : never;
 
@@ -64,7 +71,10 @@ type execMov <ins extends n32, ext extends Extate> =
 	writeReg<ext, dst, 
 		op[0] extends 0 ? movImd<imd, [op[1], op[2]]> : // mov imd
 		// movk imd: mov_imd(imd) | bcl(dst, (mov_mask: mov_imd(0xffff)))
-		or<movImd<imd, [op[2], op[1]]>, and<ext['regs'][dst], not<movImd<[15, 15, 15, 15], [op[1], op[2]]>>>> 
+		or<
+			movImd<imd, [op[1], op[2]]>, 
+			and<ext['regs'][dst], not<movImd<[15, 15, 15, 15], [op[1], op[2]]>>>
+		> extends infer value extends n64 ? value : never
 	> :
 never : never : never;
 	

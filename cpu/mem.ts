@@ -10,11 +10,11 @@ import type { Extate, Mem, RegNb } from "./index.ts";
 export type execMem <ins extends n32, ext extends Extate> = 
 	ins extends [Dg, infer op extends Dg, ...infer oprand extends Dg[]] ?
 	// dec oprand
-	decOprand<ext, oprand, dgTou2u2[oprand[0]][0]> extends 
+	decOprand<ext, oprand, dgTou2u2[op][0]> extends 
 		[infer reg extends RegNb, infer address extends n64] ?
 	// op = s:u:sz
 	// s = 0, ldr
-	bits[op][0] extends 0 ? writeReg<ext, reg, 
+	bits[op][3] extends 0 ? writeReg<ext, reg, 
 		// u = 0
 		op extends 0 ? readMem<ext['mem'], address> :                                   // ldr
 		op extends 1 ? n32Part<readMem<ext['mem'], address>, bit<address, 0, 0>> :      // ldr.32
@@ -41,24 +41,27 @@ never : never : never : never;
 /** decode oprand */
 type decOprand <ext extends Extate, oprand extends Dg[], size extends Quat> = 
 	// base + index
-	bits[oprand[0]][1] extends 0 ? 
-		oprand extends [...infer regs extends n16, ...Dg[]] ?
+	bits[oprand[0]][0] extends 0 ? 
+		oprand extends [
+			infer r0 extends Dg, infer r1 extends Dg, infer r2 extends Dg, infer r3 extends Dg, ...Dg[]
 		// dec regs
-		dec3regs<regs> extends 
+		] ? dec3regs<[r0, r1, r2, r3]> extends 
 			[infer reg extends RegNb, infer base extends RegNb, infer index extends RegNb] ?
 		// shift base and add index to it
 		[reg, add<shiftAddress<ext['regs'][base], size>, ext['regs'][index]>] :
 	never : never :
 	// base + imd
-		oprand extends [...infer regs extends n12, infer imd extends n12] ?
+		oprand extends [
+			infer r0 extends Dg, infer r1 extends Dg, infer r2 extends Dg, ...infer imd extends n12
+		] ?
 		// dec regs
-		dec2regs<regs> extends [infer reg extends RegNb, infer base extends RegNb] ?
+		dec2regs<[r0, r1, r2]> extends [infer reg extends RegNb, infer base extends RegNb] ?
 		// shift base and add imd to it
 		[reg, add<shiftAddress<ext['regs'][base], size>, lowImd<imd>>] :
 	never : never;
 
 /** shift address based on type */
-type shiftAddress <address extends n64, size extends Quat> =
+type shiftAddress <address extends n64, size extends Quat> = 
 	size extends 0 ? address :
 	size extends 1 ? shiftL1<address, 0, 1> :
 	size extends 2 ? shiftL1<address, 0, 2> :

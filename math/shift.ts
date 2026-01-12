@@ -73,7 +73,7 @@ export type shift128 <a extends n64, b extends n64> =
 /** bitfield extract a section into low */
 export type bfieldExtract <nb extends n64, offset extends Byte, width extends Byte> =
 	// lower extracted bits and mask them
-	and<shl<nb, offset>, nOnes<width>>;
+	and<shr<nb, offset>, nOnes<width>>;
 
 /** bitfield insert a section at low into base, keeping unaffected bits */
 export type bfieldInsert <nb extends n64, base extends n64, offset extends Byte, width extends Byte> =

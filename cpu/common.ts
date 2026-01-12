@@ -1,6 +1,6 @@
 import type { put } from "../common/utils.ts";
 import type { Bits, bits, bits2dg, Dg, dgTou2u2, n12, n16, n64, one, Quat, zero } from "../math/format.ts";
-import type { Extate, RegNb as RegNb } from "./index.ts";
+import type { Extate, RegNb as RegNb, } from "./index.ts";
 
 /** b5 str => u5 */
 type b5ToU5 = {

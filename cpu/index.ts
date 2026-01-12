@@ -24,6 +24,12 @@ export interface Extate {
 	conds: n16,
 	mem: Mem
 }
+export interface EmptyExtate {
+	pc: zero16,
+	regs: Record<RegNb, zero>,
+	conds: zero16,
+	mem: {}
+} 
 
 /** run cpu with irom and initial mem */
 export type run<irom extends IRom, mem extends Mem> = 
@@ -32,7 +38,7 @@ export type run<irom extends IRom, mem extends Mem> =
 		pc: zero16, regs: Record<RegNb, zero>, conds: zero16, mem: mem 
 	}, irom, [0, 0]>;
 
-type maxClock = [0, 2];
+type maxClock = [15, 15];
 /** loop of execution */
 type tick <ext extends Extate, irom extends IRom, clock extends Byte> = 
 	// inc clock
@@ -54,9 +60,9 @@ type exec <ext extends Extate, irom extends IRom> =
 	// route cur instruction based on primary group 
 	(irom[pc1][pc0] extends infer ins extends n32 ?
 		ins[0] extends 0 ? execDPR<ins, ext> :
-		ins[1] extends 1 ? execDPI<ins, ext> :
-		ins[2] extends 2 ? execMem<ins, ext> :
-		ins[2] extends 3 ? execBranch<ins, ext> :
+		ins[0] extends 1 ? execDPI<ins, ext> :
+		ins[0] extends 2 ? execMem<ins, ext> :
+		ins[0] extends 3 ? execBranch<ins, ext> :
 		never : never
 	// inc pc
 	) extends infer ext extends Extate ? { 

@@ -26,7 +26,7 @@ type exec2Src <ins extends n32, ext extends Extate> =
 		op0 extends 1 ? exec2SOp1<op1, ext, ext['regs'][src1], ext['regs'][src2], dst> :
 		// csel
 		op0 extends 2 ? writeReg<ext, dst, 
-			readCond<ext, op1, 0> extends 0 ? ext['regs'][src1] : ext['regs'][src2]
+			readCond<ext, op1, 0> extends 1 ? ext['regs'][src1] : ext['regs'][src2]
 		> :
 never : never : never;
 
@@ -42,10 +42,10 @@ type exec2SOp0 <op extends Dg, ext extends Extate, src1 extends n64, src2 extend
 	op extends 7 ? writeReg<ext, dst, bitClear<src1, src2>> : // bcr
 	op extends 8 ? writeReg<ext, dst, add<src1, src2>> :      // add
 	op extends 9 ? writeReg<ext, dst, sub<src1, src2>> :      // sub
-	op extends 10 ? addOp<src1, src2, bits[ext['conds'][0]][2]> extends // andc 
+	op extends 10 ? addOp<src1, src2, bits[ext['conds'][0]][0]> extends // andc 
 		[infer carry extends 0 | 1, infer sum extends n64] ?
 		writeRegWFlags<ext, dst, sum, carry> : never :
-	op extends 11 ? subOp<src1, src2, bits[ext['conds'][0]][2]> extends // subc
+	op extends 11 ? subOp<src1, src2, bits[ext['conds'][0]][0]> extends // subc
 		[infer carry extends 0 | 1, infer sum extends n64] ?
 		writeRegWFlags<ext, dst, sum, carry> : never :
 	op extends 12 ? writeReg<ext, dst, shl<src1, [src2[0], mod4[src2[1]]]>> : // shl

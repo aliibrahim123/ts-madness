@@ -2,14 +2,14 @@ import type { Bits, bits, bits2dg, Byte, Dg, dgTou2u2, n12, n16, Quat, quat2bits
 import type { RegNb } from "./index.ts"
 
 type u5Tob5 = {
-	0:  [0, 0, 0, 0, 0], 1:  [0, 0, 0, 0, 1], 2:  [0, 0, 0, 1, 0], 3:  [0, 0, 0, 1, 1],
-	4:  [0, 0, 1, 0, 0], 5:  [0, 0, 1, 0, 1], 6:  [0, 0, 1, 1, 0], 7:  [0, 0, 1, 1, 1],
-	8:  [0, 1, 0, 0, 0], 9:  [0, 1, 0, 0, 1], 10: [0, 1, 0, 1, 0], 11: [0, 1, 0, 1, 1],
-	12: [0, 1, 1, 0, 0], 13: [0, 1, 1, 0, 1], 14: [0, 1, 1, 1, 0], 15: [0, 1, 1, 1, 1],
-	16: [1, 0, 0, 0, 0], 17: [1, 0, 0, 0, 1], 18: [1, 0, 0, 1, 0], 19: [1, 0, 0, 1, 1],
-	20: [1, 0, 1, 0, 0], 21: [1, 0, 1, 0, 1], 22: [1, 0, 1, 1, 0], 23: [1, 0, 1, 1, 1],
-	24: [1, 1, 0, 0, 0], 25: [1, 1, 0, 0, 1], 26: [1, 1, 0, 1, 0], 27: [1, 1, 0, 1, 1],
-	28: [1, 1, 1, 0, 0], 29: [1, 1, 1, 0, 1], 30: [1, 1, 1, 1, 0], 31: [1, 1, 1, 1, 1]
+	0:  [0, 0, 0, 0, 0], 1:  [1, 0, 0, 0, 0], 2:  [0, 1, 0, 0, 0], 3:  [1, 1, 0, 0, 0],
+	4:  [0, 0, 1, 0, 0], 5:  [1, 0, 1, 0, 0], 6:  [0, 1, 1, 0, 0], 7:  [1, 1, 1, 0, 0],
+	8:  [0, 0, 0, 1, 0], 9:  [1, 0, 0, 1, 0], 10: [0, 1, 0, 1, 0], 11: [1, 1, 0, 1, 0],
+	12: [0, 0, 1, 1, 0], 13: [1, 0, 1, 1, 0], 14: [0, 1, 1, 1, 0], 15: [1, 1, 1, 1, 0],
+	16: [0, 0, 0, 0, 1], 17: [1, 0, 0, 0, 1], 18: [0, 1, 0, 0, 1], 19: [1, 1, 0, 0, 1],
+	20: [0, 0, 1, 0, 1], 21: [1, 0, 1, 0, 1], 22: [0, 1, 1, 0, 1], 23: [1, 1, 1, 0, 1],
+	24: [0, 0, 0, 1, 1], 25: [1, 0, 0, 1, 1], 26: [0, 1, 0, 1, 1], 27: [1, 1, 0, 1, 1],
+	28: [0, 0, 1, 1, 1], 29: [1, 0, 1, 1, 1], 30: [0, 1, 1, 1, 1], 31: [1, 1, 1, 1, 1]
 } 
 
 type b5 = [0 | 1, 0 | 1, 0 | 1, 0 | 1, 0 | 1];
@@ -25,7 +25,7 @@ never;
 type enc2Reg <pre extends [0|1, 0|1], reg1 extends RegNb, reg2 extends RegNb> = 
 	[u5Tob5[reg1], u5Tob5[reg2]] extends [infer reg1 extends b5, infer reg2 extends b5] ?
 	[
-		bits2dg<[...pre, reg1[0], reg1[1]]>, bits2dg<[reg1[2], reg1[3], reg1[4], reg2[0]]>, 
+		bits2dg<[pre[0], pre[1], reg1[0], reg1[1]]>, bits2dg<[reg1[2], reg1[3], reg1[4], reg2[0]]>, 
 		bits2dg<[reg2[1], reg2[2], reg2[3], reg2[4]]>
 	] :
 never;
@@ -42,7 +42,7 @@ never;
 
 type enc1Reg <pre extends [0|1, 0|1, 0|1], reg extends RegNb> = 
 	u5Tob5[reg] extends infer reg extends b5 ?
-	[bits2dg<[...pre, reg[0]]>, bits2dg<[reg[1], reg[2], reg[3], reg[4]]>] :
+	[bits2dg<[pre[0], pre[1], pre[2], reg[0]]>, bits2dg<[reg[1], reg[2], reg[3], reg[4]]>] :
 never;
 
 export type and <dst extends RegNb, src1 extends RegNb, src2 extends RegNb> =
@@ -190,7 +190,7 @@ export type add_imd <dst extends RegNb, src1 extends RegNb, src2 extends n12> =
 export type sub_imd <dst extends RegNb, src1 extends RegNb, src2 extends n12> = 
 	[1, 2, ...enc2Reg<[1, 0], dst, src1>, ...src2];
 export type rsb_imd <dst extends RegNb, src1 extends RegNb, src2 extends n12> = 
-	[1, 2, ...enc2Reg<[0, 1], dst, src1>, ...src2];
+	[1, 2, ...enc2Reg<[1, 1], dst, src1>, ...src2];
 export type comp_eq_imd <cond extends Dg, src1 extends RegNb, src2 extends n12> = 
 	[1, 3, ...enc2Reg<[0, 0], cond, src1>, ...src2];
 export type comp_ne_imd <cond extends Dg, src1 extends RegNb, src2 extends n12> = 

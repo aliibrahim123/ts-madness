@@ -55,7 +55,7 @@ export type bits = bitsTable;
 export type bit <nb extends n64, base extends Dg, bit extends Quat> = 
 	bits[nb[base]][bit]
 
-export type quat2bits = [[0, 0], [1, 0], [0, 1], [1, 1]];
+export type quat2bits = [[0, 0], [1, 0], [0, 1], [1, 1]]; 
 
 /** convert a bit array to a dg */
 export type bits2dg <nb extends Bits> =
@@ -105,22 +105,33 @@ export type nb2str <nb extends n64> = `${
 	dg2strTable[nb[3]] }${dg2strTable[nb[2]] }${dg2strTable[nb[1]] }${dg2strTable[nb[0]]
 }`
 
-/** pad right a string array to 16 len */
-type pad16 <nb extends string[], fill extends string> = 
-	nb['length'] extends 16 ? nb : pad16<[...nb, fill], fill>
+/** pad right a string array to len */
+type pad <nb extends string[], fill extends string, len extends number> = 
+	nb['length'] extends len ? nb : pad<[...nb, fill], fill, len>
 /** convert a unsigned hex string into number */
-type str2unb <str extends string> = 
+export type str2dgs <str extends string, size extends number> = 
 	// convert str into (dg char)[16]
-	pad16<toCharsRev<str>, '0'> extends infer chars extends (keyof str2dg)[] ?
+	pad<toCharsRev<str>, '0', size> extends infer chars extends (keyof str2dg)[] ?
 	// convert (dg char)[16] into n64
-	asN64<{ [ K in Dg]: str2dg[chars[K]] }> :
-	never;
+	{ [ K in Dg]: str2dg[chars[K]] } :
+never;
+/** convert a unsigned hex string into number */
+type str2unb <str extends string> = asN64<str2dgs<str, 16>> 
 /** convert a signed hex string into number */
 export type str2nb <str extends string> = 
 	str extends `-${infer str}` ? neg<str2unb<str>> : str2unb<str>
 /** convert a number into a signed hex string */
 export type snb2str <nb extends n64> =
 	sign<nb> extends 1 ? `-${nb2str<neg<nb>>}` : nb2str<nb>
+
+export type str2n16 <str extends string> = 
+	str2dgs<str, 4> extends infer dgs extends Record<Quat, Dg> ?
+	[dgs[0], dgs[1], dgs[2], dgs[3]] : 
+never;
+export type str2byte <str extends string> = 
+	str2dgs<str, 2> extends infer dgs extends Record<Quat, Dg> ?
+	[dgs[0], dgs[1]] :  
+never;
 
 type bin = keyof bin2dgTable;
 /** split a bin str into a b4 str array */
@@ -133,7 +144,7 @@ type splitBin <str extends string, res extends bin[] = []> =
 /** convert a bin string into number */
 export type bin2nb <str extends string> = 
 	// split str into (b4 str)[16]
-	pad16<splitBin<str>, '0000'> extends infer chars extends bin[] ?
+	pad<splitBin<str>, '0000', 16> extends infer chars extends bin[] ?
 	// convert (b4 str)[16] into n64
 	asN64<{ [ K in Dg]: bin2dgTable[chars[K]] }> :
 	never;

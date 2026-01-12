@@ -43,6 +43,6 @@ export type min <a extends n64, b extends n64> = gt<a, b> extends true ? b : a;
 /** return the maximum of a and b */
 export type max <a extends n64, b extends n64> = gt<a, b> extends true ? a : b;
 /** return the unsigned minimum of a and b */
-export type umin <a extends n64, b extends n64> = ucomp<a, b> extends -1 ? b : a;
+export type umin <a extends n64, b extends n64> = ucomp<a, b> extends 1 ? b : a;
 /** return the unsigned maximum of a and b */
-export type umax <a extends n64, b extends n64> = ucomp<a, b> extends -1 ? a : b;
+export type umax <a extends n64, b extends n64> = ucomp<a, b> extends 1 ? a : b;
