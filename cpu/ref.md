@@ -1,4 +1,3 @@
-# under progress
 # TEEP
 TEEP (type encoded expressions processor) is a simple 64 bit risc cpu emulated in typescript types.
 
