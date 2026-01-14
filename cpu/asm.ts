@@ -1,5 +1,6 @@
 import type { Bits, bits, bits2dg, Byte, Dg, dgTou2u2, n12, n16, Quat, quat2bits, u2u2ToDg, u6_u4u2 } from "../math/format.ts"
 import type { RegNb } from "./index.ts"
+import type { dg2str } from "../math/format_tables.ts";
 
 type u5Tob5 = {
 	0:  [0, 0, 0, 0, 0], 1:  [1, 0, 0, 0, 0], 2:  [0, 1, 0, 0, 0], 3:  [1, 1, 0, 0, 0],
@@ -45,6 +46,7 @@ type enc1Reg <pre extends [0|1, 0|1, 0|1], reg extends RegNb> =
 	[bits2dg<[pre[0], pre[1], pre[2], reg[0]]>, bits2dg<[reg[1], reg[2], reg[3], reg[4]]>] :
 never;
 
+export type mov <dst extends RegNb, src extends RegNb> = and<dst, src, 0>
 export type and <dst extends RegNb, src1 extends RegNb, src2 extends RegNb> =
 	[0, 0, 0, 0, ...enc3Reg<dst, src1, src2>];
 export type or <dst extends RegNb, src1 extends RegNb, src2 extends RegNb> =
@@ -302,3 +304,4 @@ export type br <cond extends Dg, address extends RegNb> =
 	[3, 0, 4, cond, 0, 0, ...enc1Reg<[0, 0, 0], address>];
 export type br_n <cond extends Dg, address extends RegNb> = 
 	[3, 0, 5, cond, 0, 0, ...enc1Reg<[0, 0, 0], address>];
+export type halt = jpl_imd<0, [15, 15, 15, 15]>;
