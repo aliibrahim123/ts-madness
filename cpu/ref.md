@@ -82,8 +82,8 @@ instructions that use 3 registers
 
 | `op3` | opcode | description |
 | ----- | ------ | ----------- |
-| **`max`** | `0` | signed maximum of `src1` and `src2` |
-| **`min`** | `1` | signed minimum of `src1` and `src2` |
+| **`min`** | `0` | signed minimum of `src1` and `src2` |
+| **`max`** | `1` | signed maximum of `src1` and `src2` |
 | **`umin`** | `2` | unsigned minimum of `src1` and `src2` |
 | **`umax`** | `3` | unsigned maximum of `src1` and `src2` |
 
@@ -181,7 +181,7 @@ op2: 2-3
 | **`mulf`** | `2` | multiply `src1` with `src2` and store the full 128 bit product in `dst1` (low) and `dst2` (high) |
 | **`divf`** | `3` | divide `src1` with `src2` and store the quotient in `dst1` and the reminder in `dst2` |
 | **`add3`** | `4` | addition of `src1`, `src2` and `src2` |
-| **`fush`** | `5` | funnel left shift of `src1` by `src2` mod 64, taking `src3` as carry in |
+| **`fush`** | `5` | funnel left shift of `src1` by `src3` mod 64, taking `src2` as carry in |
 
 ## others
 other DRP instructions
@@ -355,7 +355,7 @@ sizes less than word are indexed within memory words.
 ```
  0            1            2           3
  0123 4567 8901 2345 6789 0123 4567 8901
- 3    0    2    0    0    0 link  reg
+ 3    0    1    0    0    0 link  reg
 ```
 **`jpl reg`**: save `pc` to `link` register then jump to `reg`
 
@@ -377,7 +377,7 @@ address: immediate
 
 | `op2` | opcode | description |
 | ----- | ------ | ----------- |
-| **`br imd`** | `4` | branch to `imd` if condition `cond` is `1` |
-| **`br.n imd`** | `5` | branch to `imd` if condition `cond` is `0` |
-| **`br reg`** | `6` | branch to `reg` if condition `cond` is `1` |
-| **`br.n reg`** | `7` | branch to `reg` if condition `cond` is `0` |
+| **`br imd`** | `2` | branch to `imd` if condition `cond` is `1` |
+| **`br.n imd`** | `3` | branch to `imd` if condition `cond` is `0` |
+| **`br reg`** | `4` | branch to `reg` if condition `cond` is `1` |
+| **`br.n reg`** | `5` | branch to `reg` if condition `cond` is `0` |

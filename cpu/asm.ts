@@ -78,9 +78,9 @@ export type sar <dst extends RegNb, src1 extends RegNb, src2 extends RegNb> =
 export type rol <dst extends RegNb, src1 extends RegNb, src2 extends RegNb> =
 	[0, 0, 0, 15, ...enc3Reg<dst, src1, src2>];
 
-export type max <dst extends RegNb, src1 extends RegNb, src2 extends RegNb> =
-	[0, 0, 1, 0, ...enc3Reg<dst, src1, src2>];
 export type min <dst extends RegNb, src1 extends RegNb, src2 extends RegNb> =
+	[0, 0, 1, 0, ...enc3Reg<dst, src1, src2>];
+export type max <dst extends RegNb, src1 extends RegNb, src2 extends RegNb> =
 	[0, 0, 1, 1, ...enc3Reg<dst, src1, src2>];
 export type umin <dst extends RegNb, src1 extends RegNb, src2 extends RegNb> =
 	[0, 0, 1, 2, ...enc3Reg<dst, src1, src2>];
@@ -293,12 +293,12 @@ export type str_8_offset <src extends RegNb, base extends RegNb, offset extends 
 export type jpl_imd <link extends RegNb, address extends n16> = 
 	[3, 0, ...enc1Reg<[0, 0, 0], link>, ...address];
 export type jpl <link extends RegNb, address extends RegNb> = 
-	[3, 0, 2, 0, 0, ...enc2Reg<[0, 0], link, address>];
+	[3, 0, 1, 0, 0, ...enc2Reg<[0, 0], link, address>];
 export type br_imd <cond extends Dg, address extends n16> = 
-	[3, 0, 4, cond, ...address];
+	[3, 0, 2, cond, ...address];
 export type br_n_imd <cond extends Dg, address extends n16> = 
-	[3, 0, 5, cond, ...address];
+	[3, 0, 3, cond, ...address];
 export type br <cond extends Dg, address extends RegNb> = 
-	[3, 0, 6, cond, 0, 0, ...enc1Reg<[0, 0, 0], address>];
+	[3, 0, 4, cond, 0, 0, ...enc1Reg<[0, 0, 0], address>];
 export type br_n <cond extends Dg, address extends RegNb> = 
-	[3, 0, 7, cond, 0, 0, ...enc1Reg<[0, 0, 0], address>];
+	[3, 0, 5, cond, 0, 0, ...enc1Reg<[0, 0, 0], address>];

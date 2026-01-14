@@ -1,7 +1,7 @@
 import type { satisfies } from "../common/utils.ts";
 import type { sub8 } from "./arith.ts";
 import type { sign } from "./comp.ts";
-import type { allOf, Byte, Dg, n64, Quat, n68, u6_u4u2, zero, nOnes, bit, Octal } from "./format.ts";
+import type { allOf, Byte, Dg, n64, Quat, n68, u6_u4u2, zero, nOnes, bit, Octal, n16 } from "./format.ts";
 import type { and, not, or } from "./logic.ts";
 import type { shift as SL1Dg } from "./tables.ts";
 
@@ -166,3 +166,11 @@ export type mergePart8 <b extends n64, s extends n64, partOffset extends Octal> 
 	] : partOffset extends 7 ? [
 		b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], s[0 ], s[1 ],
 	] : never;
+
+export type shiftL16 <nb extends Dg[], am extends Quat> = [
+	SL1Dg[am][nb[0]][0], SL1Dg[am][nb[1]][nb[0]], SL1Dg[am][nb[2]][nb[1]], SL1Dg[am][nb[3]][nb[2]]
+];
+export type shiftR16 <nb extends Dg[], am extends Quat> = 
+	[0, 3, 2, 1][am] extends infer am extends Quat ? [
+		SL1Dg[am][nb[1]][nb[0]], SL1Dg[am][nb[2]][nb[1]], SL1Dg[am][nb[3]][nb[2]], SL1Dg[am][0][nb[3]], 
+	]: never;

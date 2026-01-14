@@ -1,6 +1,6 @@
 import type { put } from "../common/utils.ts";
 import type { add16 } from "../math/arith.ts";
-import type { Bits, bits, Byte, Dg, n12, n16, n32, n64ToN16 } from "../math/format.ts";
+import type { Bits, bits, Byte, Dg, n12, n16, n32, n64ToN16, n16ToN64 } from "../math/format.ts";
 import type { dec2regs, decReg, readCond } from "./common.ts";
 import type { Extate, RegNb } from "./index.ts";
 
@@ -18,25 +18,25 @@ type u1u4Tou5 = {
 /** execute branch instruction, grp = 3 */
 export type execBranch <ins extends n32, ext extends Extate> =
 	ins extends [Dg, 0, infer op extends Dg, ...infer rest extends Dg[]] ?
-		op extends 0 | 1 ? rest extends [infer regHigh extends Dg, ...infer address extends n16] ? // jpl imd
-			jumpAndLink<ext, address, u1u4Tou5[op][regHigh]> : never :
-		op extends 2 ? rest extends [0, 0, ...infer regs extends n12] ?                        
+		op extends 0 | 8 ? rest extends [infer regHigh extends Dg, ...infer address extends n16] ? // jpl imd
+			jumpAndLink<ext, address, u1u4Tou5[op extends 0 ? 0 : 1][regHigh]> : never :
+		op extends 1 ? rest extends [0, 0, ...infer regs extends n12] ?                        
 			dec2regs<regs> extends [infer link extends RegNb, infer reg extends RegNb] ?// jml reg
 			jumpAndLink<ext, n64ToN16<ext['regs'][reg]>, link> : never : never :
-		op extends 4 ? rest extends [infer cond extends Dg, ...infer address extends n16] ?    // br imd
+		op extends 2 ? rest extends [infer cond extends Dg, ...infer address extends n16] ?    // br imd
 			readCond<ext, cond, 0> extends 1 ? jumpTo<ext, address> : ext : never :
-		op extends 5 ? rest extends [infer cond extends Dg, ...infer address extends n16] ?    // br.n imd
+		op extends 3 ? rest extends [infer cond extends Dg, ...infer address extends n16] ?    // br.n imd
 			readCond<ext, cond, 1> extends 1 ? jumpTo<ext, address> : ext : never :
-		op extends 6 ? rest extends [infer cond extends Dg, 0, 0, ...infer reg extends Byte] ? // br reg
+		op extends 4 ? rest extends [infer cond extends Dg, 0, 0, ...infer reg extends Byte] ? // br reg
 			readCond<ext, cond, 0> extends 1 ? jumpToReg<ext, reg> : ext : never :
-		op extends 7 ? rest extends [infer cond extends Dg, 0, 0, ...infer reg extends Byte] ? // br.n reg
+		op extends 5 ? rest extends [infer cond extends Dg, 0, 0, ...infer reg extends Byte] ? // br.n reg
 			readCond<ext, cond, 1> extends 1 ? jumpToReg<ext, reg> : ext : never :
 never : never;
 
 /** save pc and jump to an address */
 type jumpAndLink <ext extends Extate, address extends n16, link extends RegNb> = {
 	pc: add16<address, [15, 15, 15, 15]>, conds: ext['conds'], mem: ext['mem'], 
-	regs: link extends 0 ? ext['regs'] : put<ext['regs'], link, ext['pc']>
+	regs: link extends 0 ? ext['regs'] : put<ext['regs'], link, n16ToN64<add16<ext['pc'], [1, 0, 0, 0]>>>
 }
 /** jump to a register */
 type jumpToReg <ext extends Extate, reg extends Byte> = 

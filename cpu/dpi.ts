@@ -1,7 +1,7 @@
 import type { satisfies } from "../common/utils.ts";
 import type { add, sub } from "../math/arith.ts";
 import type { eq, gt, lt } from "../math/comp.ts";
-import type { Bits, bits, Byte, Dg, dgTou2u2, n12, n16, n32, n64, Quat, u2u4_u6, zero } from "../math/format.ts";
+import type { Bits, bits, Byte, Dg, dgTou2u2, n12, n16, n32, n64, Quat, u2u4_u6, zero, zero16 } from "../math/format.ts";
 import type { and, and16, bitClear, countBits16 as cnt16, imply, nand, nor, not, or, redXor16, xnor, xor, xor16 } from "../math/logic.ts";
 import type { bfieldExtract, bfieldInsert, rol, sar, shl, shr } from "../math/shift.ts";
 import type { dec2regs, decReg, writeCond, writeReg } from "./common.ts";
@@ -81,12 +81,12 @@ never : never : never;
 /** exec conditions instruction, grp = 1.7 */
 type execCond <ins extends n32, ext extends Extate> =
 	ins extends [Dg, Dg, infer op extends 0 | 1 | 2 | 3, infer dst extends Dg, ...infer mask extends n16] ?
-		op extends 0 ? writeCond<ext, dst, and16<ext['conds'], mask> extends zero ? 1 : 0> :      // none
-		op extends 1 ? writeCond<ext, dst, and16<ext['conds'], mask> extends zero ? 0 : 1> :      // any
+		op extends 0 ? writeCond<ext, dst, and16<ext['conds'], mask> extends zero16 ? 1 : 0> :      // none
+		op extends 1 ? writeCond<ext, dst, and16<ext['conds'], mask> extends zero16 ? 0 : 1> :      // any
 		op extends 2 ? writeCond<ext, dst, and16<ext['conds'], mask> extends mask ? 1 : 0> :      // all
 		op extends 3 ? writeCond<ext, dst, cnt16<and16<ext['conds'], mask>> extends 1  ? 1 : 0> : // only
 		never :
-	ins extends [Dg, Dg, 4, infer op extends Dg, infer mask extends n16] ? // ncond
+	ins extends [Dg, Dg, 4, infer op extends Dg, ...infer mask extends n16] ? // ncond
 		op extends 0 ? { 
 			pc: ext['pc'], regs: ext['regs'], mem: ext['mem'], conds: xor16<ext['conds'], mask> 
 		} :
